@@ -1,0 +1,110 @@
+---
+version: "3"
+
+services:
+  nginx:
+    build: k8s-nginx
+    container_name: k8s-nginx
+    depends_on:
+      - front
+    networks:
+      - k8s-internal
+    ports:
+      - "443:443"
+    volumes:
+      - ./k8s-nginx/main.conf:/etc/nginx/conf.d/main.conf
+
+  front:
+    build: k8s-front
+    container_name: k8s-front
+    environment:
+#      - HOST=0.0.0.0
+      - PORT=3000
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - k8s-internal
+    volumes:
+      - ./k8s-front:/code/
+#
+#  backend:
+#    build: backend
+#    container_name: postera-backend
+#    depends_on:
+#      - db
+#    env_file:
+#      - .env
+#    networks:
+#      - postera-internal
+#    ports:
+#      - 8000:8000
+#    tty: true
+#    volumes:
+#      - ./backend/:/code/
+#
+#  worker:
+#    build: backend
+#    command: >
+#      celery
+#      --app postera.celery
+#      worker
+#      --beat
+#      --schedule /tmp/celerybeat
+#      --loglevel WARNING
+#    container_name: postera-worker
+#    depends_on:
+#      - db
+#      - redis
+#    env_file:
+#      - .env
+#    environment:
+#      - COLUMNS=80
+#    networks:
+#      - postera-internal
+#    tty: true
+#    volumes:
+#      - ./backend/:/code/
+#
+#  db:
+#    build: database
+#    container_name: postera-db
+#    env_file:
+#      - .env
+#    networks:
+#      - postera-internal
+#    ports:
+#      - 5432:5432
+#    volumes:
+#      - postera-db:/var/lib/postgresql/data/
+#
+#  lab:
+#    build: lab
+#    container_name: postera-lab
+#    depends_on:
+#      - db
+#    env_file:
+#      - .env
+#    networks:
+#      - postera-internal
+#    ports:
+#      - 8001:8001
+#    tty: true
+#    volumes:
+#      - ./lab/:/code/
+#
+#  redis:
+#    build: redis
+#    container_name: postera-redis
+#    env_file:
+#      - .env
+#    networks:
+#      - postera-internal
+#    volumes:
+#      - postera-redis:/data/
+
+networks:
+  k8s-internal:
+
+volumes:
+  k8s-db:
+  k8s-graph:
+  k8s-redis:
