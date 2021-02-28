@@ -2,6 +2,17 @@
 version: "3"
 
 services:
+  front:
+    build: k8s-front
+    container_name: k8s-front
+    environment:
+      - PORT=3000
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - k8s-internal
+    volumes:
+      - ./k8s-front:/code/
+
   nginx:
     build: k8s-nginx
     container_name: k8s-nginx
@@ -14,17 +25,17 @@ services:
     volumes:
       - ./k8s-nginx/main.conf:/etc/nginx/conf.d/main.conf
 
-  front:
-    build: k8s-front
-    container_name: k8s-front
-    environment:
-#      - HOST=0.0.0.0
-      - PORT=3000
-      - CHOKIDAR_USEPOLLING=true
+  sql:
+    build: k8s-sql
+    container_name: k8s-sql
+    env_file:
+      - .envs/sql.env
     networks:
       - k8s-internal
+    ports:
+      - "5432:5432"
     volumes:
-      - ./k8s-front:/code/
+      - k8s-sql:/var/lib/postgresql/data/
 #
 #  backend:
 #    build: backend
@@ -105,6 +116,6 @@ networks:
   k8s-internal:
 
 volumes:
-  k8s-db:
+  k8s-sql:
   k8s-graph:
   k8s-redis:
