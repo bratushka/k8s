@@ -6,6 +6,7 @@ services:
     build: k8s-api
     container_name: k8s-api
     depends_on:
+      - async
       - sql
     env_file:
       - .envs/sql.env
@@ -13,6 +14,14 @@ services:
       - k8s-internal
     volumes:
       - ./k8s-api:/code
+
+  async:
+    build: k8s-async
+    container_name: k8s-async
+    networks:
+      - k8s-internal
+    volumes:
+      - ./k8s-async:/code
 
   front:
     build: k8s-front
@@ -50,22 +59,7 @@ services:
       - "5432:5432"
     volumes:
       - k8s-sql:/var/lib/postgresql/data/
-#
-#  backend:
-#    build: backend
-#    container_name: postera-backend
-#    depends_on:
-#      - db
-#    env_file:
-#      - .env
-#    networks:
-#      - postera-internal
-#    ports:
-#      - 8000:8000
-#    tty: true
-#    volumes:
-#      - ./backend/:/code/
-#
+
 #  worker:
 #    build: backend
 #    command: >
@@ -88,33 +82,6 @@ services:
 #    tty: true
 #    volumes:
 #      - ./backend/:/code/
-#
-#  db:
-#    build: database
-#    container_name: postera-db
-#    env_file:
-#      - .env
-#    networks:
-#      - postera-internal
-#    ports:
-#      - 5432:5432
-#    volumes:
-#      - postera-db:/var/lib/postgresql/data/
-#
-#  lab:
-#    build: lab
-#    container_name: postera-lab
-#    depends_on:
-#      - db
-#    env_file:
-#      - .env
-#    networks:
-#      - postera-internal
-#    ports:
-#      - 8001:8001
-#    tty: true
-#    volumes:
-#      - ./lab/:/code/
 #
 #  redis:
 #    build: redis
