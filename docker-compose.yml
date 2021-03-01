@@ -2,6 +2,18 @@
 version: "3"
 
 services:
+  api:
+    build: k8s-api
+    container_name: k8s-api
+    depends_on:
+      - sql
+    env_file:
+      - .envs/sql.env
+    networks:
+      - k8s-internal
+    volumes:
+      - ./k8s-api:/code
+
   front:
     build: k8s-front
     container_name: k8s-front
@@ -17,13 +29,15 @@ services:
     build: k8s-nginx
     container_name: k8s-nginx
     depends_on:
+      - api
       - front
     networks:
       - k8s-internal
     ports:
       - "443:443"
+      - "8000:8000"
     volumes:
-      - ./k8s-nginx/main.conf:/etc/nginx/conf.d/main.conf
+      - ./k8s-nginx/dev.conf:/etc/nginx/conf.d/dev.conf
 
   sql:
     build: k8s-sql
