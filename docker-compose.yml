@@ -9,6 +9,7 @@ services:
       - async
       - sql
     env_file:
+      - .envs/api.env
       - .envs/sql.env
     networks:
       - k8s-internal
@@ -34,17 +35,30 @@ services:
     volumes:
       - ./k8s-front:/code/
 
+  graph:
+    build: k8s-graph
+    container_name: k8s-graph
+    env_file:
+      - .envs/graph.env
+    networks:
+      - k8s-internal
+    volumes:
+      - k8s-graph:/data/
+
   nginx:
     build: k8s-nginx
     container_name: k8s-nginx
     depends_on:
       - api
       - front
+      - graph
     networks:
       - k8s-internal
     ports:
-      - "443:443"
-      - "8000:8000"
+      - "443:443"    # front
+      - "7474:7474"  # graph
+      - "7687:7687"  # graph
+      - "8000:8000"  # api
     volumes:
       - ./k8s-nginx/dev.conf:/etc/nginx/conf.d/dev.conf
 
@@ -55,8 +69,6 @@ services:
       - .envs/sql.env
     networks:
       - k8s-internal
-    ports:
-      - "5432:5432"
     volumes:
       - k8s-sql:/var/lib/postgresql/data/
 
