@@ -2,7 +2,7 @@
 version: "3"
 
 services:
-  api:
+  api: &api
     build: k8s-api
     container_name: k8s-api
     depends_on:
@@ -10,6 +10,7 @@ services:
       - sql
     env_file:
       - .envs/api.env
+      - .envs/redis.env
       - .envs/sql.env
     networks:
       - k8s-internal
@@ -83,37 +84,17 @@ services:
       - k8s-sql:/var/lib/postgresql/data/
 
 #  worker:
-#    build: backend
-#    command: >
+#    <<: *api
+#    command: |
 #      celery
-#      --app postera.celery
+#      --app api.celery
 #      worker
 #      --beat
 #      --schedule /tmp/celerybeat
 #      --loglevel WARNING
-#    container_name: postera-worker
-#    depends_on:
-#      - db
-#      - redis
-#    env_file:
-#      - .env
+#    container_name: k8s-worker
 #    environment:
 #      - COLUMNS=80
-#    networks:
-#      - postera-internal
-#    tty: true
-#    volumes:
-#      - ./backend/:/code/
-#
-#  redis:
-#    build: redis
-#    container_name: postera-redis
-#    env_file:
-#      - .env
-#    networks:
-#      - postera-internal
-#    volumes:
-#      - postera-redis:/data/
 
 networks:
   k8s-internal:
