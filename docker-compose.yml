@@ -62,6 +62,16 @@ services:
     volumes:
       - ./k8s-nginx/dev.conf:/etc/nginx/conf.d/dev.conf
 
+  redis:
+    build: k8s-redis
+    container_name: k8s-redis
+    env_file:
+      - .envs/redis.env
+    networks:
+      - k8s-internal
+    volumes:
+      - k8s-redis:/data/
+
   sql:
     build: k8s-sql
     container_name: k8s-sql
