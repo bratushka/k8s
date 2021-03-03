@@ -1,5 +1,5 @@
 ---
-version: "3"
+version: "3.7"
 
 services:
   api: &api
@@ -20,6 +20,9 @@ services:
   async:
     build: k8s-async
     container_name: k8s-async
+    env_file:
+      - .envs/graph.env
+      - .envs/redis.env
     networks:
       - k8s-internal
     volumes:
@@ -53,6 +56,12 @@ services:
       - api
       - front
       - graph
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://localhost:8000/core/alive/"]
+      interval: 1m
+      timeout: 1s
+      retries: 1
+      start_period: 10s
     networks:
       - k8s-internal
     ports:
@@ -90,11 +99,16 @@ services:
 #      --app api.celery
 #      worker
 #      --beat
-#      --schedule /tmp/celerybeat
+#      --schedule /tmp/celery-beat
 #      --loglevel WARNING
 #    container_name: k8s-worker
 #    environment:
 #      - COLUMNS=80
+#    healthcheck:
+#      test: ["CMD", "celery", "--app", "api.celery", "inspect", "ping"]
+#      interval: 1m
+#      retries: 3
+#      start_period: 10s
 
 networks:
   k8s-internal:
