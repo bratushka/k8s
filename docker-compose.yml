@@ -23,6 +23,7 @@ services:
     env_file:
       - .envs/graph.env
       - .envs/redis.env
+      - .envs/sql.env
     networks:
       - k8s-internal
     volumes:

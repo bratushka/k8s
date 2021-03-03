@@ -1,6 +1,10 @@
 import ssl
+# noinspection PyPep8Naming
+import typing as T
+from contextlib import asynccontextmanager
 
 import aioredis
+import asyncpg
 from neo4j import GraphDatabase, Neo4jDriver, Session
 
 from .. import config
@@ -37,9 +41,6 @@ class Redis(Service):
 
 
 class Graph(Service):
-    """
-    Make it async when Neo4j driver complies.
-    """
     _driver: Neo4jDriver = None
 
     @classmethod
@@ -62,3 +63,28 @@ class Graph(Service):
             result = session.run('RETURN 1')
 
             return list(result)[0]['1'] == 1
+
+
+class SQL:
+    """
+    Database class.
+    """
+    _pool: asyncpg.pool.Pool = None
+
+    @classmethod
+    @asynccontextmanager
+    async def connection(cls) -> T.AsyncIterator[asyncpg.connection.Connection]:
+        if cls._pool is None:
+            cls._pool = await asyncpg.pool.create_pool(
+                host='sql',
+                port=5432,
+                user=config.POSTGRES_USER,
+                database=config.POSTGRES_USER,
+                password=config.POSTGRES_PASSWORD,
+            )
+
+        con: asyncpg.connection.Connection = await cls._pool.acquire()
+        try:
+            yield con
+        finally:
+            await cls._pool.release(con)

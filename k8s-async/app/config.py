@@ -3,3 +3,5 @@ import os
 
 REDIS_PASSWORD = os.environ['REDIS_PASSWORD']
 NEO4J_AUTH = os.environ['NEO4J_AUTH']
+POSTGRES_USER = os.environ['POSTGRES_USER']
+POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
