@@ -1,8 +1,15 @@
 ---
 version: "3.7"
 
+x-common: &common
+  stdin_open: true # docker run -i
+  tty: true        # docker run -t
+  networks:
+    - k8s-internal
+
 services:
   api: &api
+    <<: *common
     build: k8s-api
     container_name: k8s-api
     depends_on:
@@ -12,45 +19,42 @@ services:
       - .envs/api.env
       - .envs/redis.env
       - .envs/sql.env
-    networks:
-      - k8s-internal
     volumes:
       - ./k8s-api:/code
 
   async:
+    <<: *common
     build: k8s-async
     container_name: k8s-async
     env_file:
       - .envs/graph.env
       - .envs/redis.env
       - .envs/sql.env
-    networks:
-      - k8s-internal
     volumes:
       - ./k8s-async:/code
 
   front:
+    <<: *common
     build: k8s-front
     container_name: k8s-front
     environment:
       - PORT=3000
       - CHOKIDAR_USEPOLLING=true
-    networks:
-      - k8s-internal
     volumes:
       - ./k8s-front:/code/
+    tty: false
 
   graph:
+    <<: *common
     build: k8s-graph
     container_name: k8s-graph
-    env_file:
-      - .envs/graph.env
     networks:
       - k8s-internal
     volumes:
       - k8s-graph:/data/
 
   nginx:
+    <<: *common
     build: k8s-nginx
     container_name: k8s-nginx
     depends_on:
@@ -63,8 +67,6 @@ services:
       timeout: 1s
       retries: 1
       start_period: 10s
-    networks:
-      - k8s-internal
     ports:
       - "443:443"    # front
       - "7474:7474"  # graph
@@ -74,22 +76,20 @@ services:
       - ./k8s-nginx/dev.conf:/etc/nginx/conf.d/dev.conf
 
   redis:
+    <<: *common
     build: k8s-redis
     container_name: k8s-redis
     env_file:
       - .envs/redis.env
-    networks:
-      - k8s-internal
     volumes:
       - k8s-redis:/data/
 
   sql:
+    <<: *common
     build: k8s-sql
     container_name: k8s-sql
     env_file:
       - .envs/sql.env
-    networks:
-      - k8s-internal
     volumes:
       - k8s-sql:/var/lib/postgresql/data/
 
